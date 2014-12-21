@@ -19,6 +19,8 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using WPFArrivals.API;
+using WPFArrivals.Demos.ListControls;
+using WPFArrivals.Singletons;
 
 //http://api.tfl.gov.uk/#Line
 //http://stackoverflow.com/questions/1405739/mvvm-tutorial-from-start-to-finish
@@ -32,24 +34,22 @@ namespace WPFArrivals
         public MainWindow()
         {
             InitializeComponent();
+            InitDTO();
 
+            // dtos.ModeOptions = checkBoxes;
+            //dto.Routes = des;
+            this.DataContext = StaticDTOs.Arrivals;
+
+        }
+
+        private void InitDTO()
+        {
             var fs = new FileStream(@"c:\Line.json", FileMode.Open);
             var serialiser = new DataContractJsonSerializer(typeof(Route[]));
-            var des = (Route[])serialiser.ReadObject(fs);   
-            // this.DataContext = des;
+            var routes = (Route[])serialiser.ReadObject(fs);
 
-
-            var checkBoxes = BuildCheckBoxes(des);
-
-
-            var viewmodel =new IAMADTO()
-            {
-                ModeOptions = checkBoxes,
-                Routes = des,
-            };
-            
-            this.DataContext = viewmodel;
-
+            var checkBoxes = BuildCheckBoxes(routes);
+            StaticDTOs.Arrivals = new DTOArrivals() { ModeOptions = checkBoxes, Routes = routes };
         }
 
         private IEnumerable<CheckBox> BuildCheckBoxes(Route[] des)
@@ -69,6 +69,12 @@ namespace WPFArrivals
         {
 
         }
+
+        private void btnItemsControl_Click(object sender, System.Windows.RoutedEventArgs e)
+        {
+            var window = new ItemsControlDemo();
+            window.Show();
+        }
     }
 
     public class DistinctModes : IEqualityComparer<Route>
@@ -86,12 +92,11 @@ namespace WPFArrivals
         private string GetValue(Route obj)
         {
             return obj.ModeName.ToLower();
+            
         }
     }
 
     public class IAMADTO
     {
-        public IEnumerable<CheckBox> ModeOptions { get; set; }
-        public IEnumerable<Route> Routes { get; set; }
     }
 }
